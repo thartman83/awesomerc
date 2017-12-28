@@ -66,7 +66,7 @@ end
 beautiful.init("/usr/share/awesome/themes/default/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "xterm"
+terminal = "urxvt"
 editor = os.getenv("EDITOR") or "nano"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -95,6 +95,22 @@ local layouts =
 }
 -- }}}
 
+--- Tools -- {{{
+local tools = {}
+
+tools.terminal           = 'urxvt'
+tools.compmgr_cmd        = 'xcompmgr'
+tools.compmgr_cmdopts    = '-f -c -s'
+tools.filemanager_cmd    = 'mc'
+tools.browser_cmd        = os.getenv('BROWSER') or 'firefox'
+tools.editor_cmd         = os.getenv('EDITOR') or 'et'
+tools.screenlock_cmd     = 'xscreensaver-command'
+tools.screenlock_cmdopts = '-l'
+tools.background_cmd     = 'nitrogen'
+tools.background_cmdopts = '--restore'
+
+-- }}}
+
 --- Wallpaper -- {{{
 if beautiful.wallpaper then
     for s = 1, screen.count() do
@@ -115,14 +131,14 @@ end
 --- Menu -- {{{
 -- Create a laucher widget and a main menu
 myawesomemenu = {
-   { "manual", terminal .. " -e man awesome" },
+   { "manual", tools.terminal .. " -e man awesome" },
    { "edit config", editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
    { "quit", awesome.quit }
 }
 
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    { "open terminal", terminal }
+                                    { "open terminal", tools.terminal }
                                   }
                         })
 
@@ -130,7 +146,7 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
 
 -- Menubar configuration
-menubar.utils.terminal = terminal -- Set the terminal for applications that require it
+menubar.utils.terminal = tools.terminal -- Set the terminal for applications that require it
 -- }}}
 
 --- Wibox -- {{{
@@ -270,7 +286,7 @@ globalkeys = awful.util.table.join(
         end),
 
     -- Standard program
-    awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
+    awful.key({ modkey,           }, "Return", function () awful.util.spawn(tools.terminal) end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
 
