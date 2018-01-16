@@ -121,14 +121,6 @@ tools.background_cmdopts = '--restore'
 
 -- }}}
 
---- Wallpaper -- {{{
-if beautiful.wallpaper then
-    for s = 1, screen.count() do
-        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-    end
-end
--- }}}
-
 --- Tags -- {{{
 -- Define a tag table which hold all screen tags.
 mytags = {}
