@@ -62,8 +62,11 @@ end
 -- }}}
 
 --- Variable definitions -- {{{
+local home_path = '/home/' .. os.getenv('USER')
+local awesome_path = home_path .. '/.config/awesome/'
+
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init("/usr/share/awesome/themes/default/theme.lua")
+beautiful.init(awesome_path .. 'theme.lua')
 
 -- This is used later as the default terminal and editor to run.
 terminal = "urxvt"
@@ -239,8 +242,8 @@ awful.screen.connect_for_each_screen(function (s)
                                     {__index=wibox_args}))
 
       wibox_bot[s]:setup {         
-         layout = wibox.layout.align.horizontal,
-         mytasklist
+         mytasklist,
+         layout = wibox.layout.flex.horizontal
                          }
       
 end)
@@ -457,7 +460,7 @@ client.connect_signal("manage", function (c, startup)
         end
     end
 
-    local titlebars_enabled = false
+    local titlebars_enabled = true
     if titlebars_enabled and (c.type == "normal" or c.type == "dialog") then
         -- buttons for the titlebar
         local buttons = awful.util.table.join(
