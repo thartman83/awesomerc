@@ -23,17 +23,17 @@
 
 --- Libraries -- {{{{
 -- Standard awesome library
-local gears = require("gears")
-local awful = require("awful")
-awful.rules = require("awful.rules")
-require("awful.autofocus")
+local gears     = require("gears"           )
+local awful     = require("awful"           )
+awful.rules     = require("awful.rules"     )
+                  require("awful.autofocus" )
 -- Widget and layout library
-local wibox = require("wibox")
+local wibox     = require("wibox"           )
 -- Theme handling library
-local beautiful = require("beautiful")
+local beautiful = require("beautiful"       )
 -- Notification library
-local naughty = require("naughty")
-local menubar = require("menubar")
+local naughty   = require("naughty"         )
+local menubar   = require("menubar"         )
 -- }}}
 
 --- Error handling -- {{{
@@ -127,7 +127,23 @@ tools.background_cmdopts = '--restore'
 --- Tags -- {{{
 -- Define a tag table which hold all screen tags.
 mytags = {}
-mytags[1] = {"chat","code","read","surf","watch","listen","create","system","monitor"}
+
+-- Multi screen (desktop) tags
+mytags.desktop = {}
+mytags.desktop[1] = { "surf", "watch", "listen", "create", "monitor" }
+mytags.desktop[2] = { "chat","code", "read", "system" }
+
+-- Single screen (laptop) tags
+mytags.laptop  = {}
+mytags.laptop[1] = {"chat","code","read","surf","watch","listen",
+                    "create","system","monitor"}
+
+if screen.count() == 2 then
+   mytags.tags = mytags.desktop
+else
+   mytags.tags = mytags.laptop
+end
+
 -- }}}
 
 --- Screens -- {{{
@@ -195,7 +211,7 @@ awful.screen.connect_for_each_screen(function (s)
       set_wallpaper(s)
 
       -- Tags
-      awful.tag(mytags[s.index], s, layouts)
+      awful.tag(mytags.tags[s.index], s, layouts)
       
       -- Prompt box
       mypromptbox[s] = awful.widget.prompt()
@@ -205,19 +221,21 @@ awful.screen.connect_for_each_screen(function (s)
                                            mytaglistbuttons)
       
       -- tasklist
-      local mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags,
-                                               mytasklistbuttons)
+      local mytasklist =
+         awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags,
+                               mytasklistbuttons)
 
       -- clock
       local mytextclock = wibox.widget.textclock()
 
       -- layoutbox
       local mylayoutbox = awful.widget.layoutbox(s)
-      mylayoutbox:buttons(awful.util.table.join(
-                             awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-                             awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-                             awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-                             awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+      mylayoutbox:buttons(
+         awful.util.table.join(
+            awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+            awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+            awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+            awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
       
       -- Put it all together in a wibox
       wibox_top[s] = awful.wibar(setmetatable({ position = "top", screen = s},
@@ -236,12 +254,11 @@ awful.screen.connect_for_each_screen(function (s)
             layout = wibox.layout.fixed.horizontal
          },
       }
-
       
       wibox_bot[s] = awful.wibar(setmetatable({ position = "bottom", screen = s},
                                     {__index=wibox_args}))
 
-      wibox_bot[s]:setup {         
+      wibox_bot[s]:setup {
          mytasklist,
          layout = wibox.layout.flex.horizontal
                          }
@@ -258,16 +275,18 @@ myawesomemenu = {
    { "quit", awesome.quit }
 }
 
-mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    { "open terminal", tools.terminal }
-                                  }
-                        })
+mymainmenu = awful.menu({
+      items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
+         { "open terminal", tools.terminal }
+      }
+})
 
 mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
 
 -- Menubar configuration
-menubar.utils.terminal = tools.terminal -- Set the terminal for applications that require it
+-- Set the terminal for applications that require it
+menubar.utils.terminal = tools.terminal
 -- }}}
 
 --- Mouse bindings -- {{{
@@ -297,10 +316,14 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "w", function () mymainmenu:show() end),
 
     -- Layout manipulation
-    awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end),
-    awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end),
-    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end),
-    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end),
+    awful.key({ modkey, "Shift"   }, "j",
+       function () awful.client.swap.byidx(  1)    end),
+    awful.key({ modkey, "Shift"   }, "k",
+       function () awful.client.swap.byidx( -1)    end),
+    awful.key({ modkey, "Control" }, "j",
+       function () awful.screen.focus_relative( 1) end),
+    awful.key({ modkey, "Control" }, "k",
+       function () awful.screen.focus_relative(-1) end),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
     awful.key({ modkey,           }, "Tab",
         function ()
@@ -311,23 +334,31 @@ globalkeys = awful.util.table.join(
         end),
 
     -- Standard program
-    awful.key({ modkey,           }, "Return", function () awful.util.spawn(tools.terminal) end),
+    awful.key({ modkey,           }, "Return",
+       function () awful.util.spawn(tools.terminal) end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
-
-    awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
-    awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
-    awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1)      end),
-    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
-    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
-    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
-    awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
-    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
-
+    awful.key({ modkey,           }, "l",
+       function () awful.tag.incmwfact( 0.05)    end),
+    awful.key({ modkey,           }, "h",
+       function () awful.tag.incmwfact(-0.05)    end),
+    awful.key({ modkey, "Shift"   }, "h",
+       function () awful.tag.incnmaster( 1)      end),
+    awful.key({ modkey, "Shift"   }, "l",
+       function () awful.tag.incnmaster(-1)      end),
+    awful.key({ modkey, "Control" }, "h",
+       function () awful.tag.incncol( 1)         end),
+    awful.key({ modkey, "Control" }, "l",
+       function () awful.tag.incncol(-1)         end),
+    awful.key({ modkey,           }, "space",
+       function () awful.layout.inc(layouts,  1) end),
+    awful.key({ modkey, "Shift"   }, "space",
+       function () awful.layout.inc(layouts, -1) end),
     awful.key({ modkey, "Control" }, "n", awful.client.restore),
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
+    awful.key({ modkey },            "r",
+       function () mypromptbox[mouse.screen]:run() end),
 
     awful.key({ modkey }, "x",
               function ()
@@ -341,12 +372,16 @@ globalkeys = awful.util.table.join(
 )
 
 clientkeys = awful.util.table.join(
-    awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
-    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end),
-    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ),
-    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
-    awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
-    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
+   awful.key({ modkey,           }, "f",
+      function (c) c.fullscreen = not c.fullscreen  end),
+   awful.key({ modkey, "Shift"   }, "c",
+      function (c) c:kill() end),
+    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle),
+    awful.key({ modkey, "Control" }, "Return",
+       function (c) c:swap(awful.client.getmaster()) end),
+    awful.key({ modkey,           }, "o",      awful.client.movetoscreen),
+    awful.key({ modkey,           }, "t",
+       function (c) c.ontop = not c.ontop end),
     awful.key({ modkey,           }, "n",
         function (c)
             -- The client currently has the input focus, so it cannot be
