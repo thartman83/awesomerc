@@ -189,6 +189,7 @@ mypromptbox = {}
 local wibox_top = {}
 local wibox_bot = {}
 
+--- TagList -- {{{
 mytaglistbuttons = awful.util.table.join(
    awful.button({ }, 1, awful.tag.viewonly),
    awful.button({ modkey }, 1, awful.client.movetotag),
@@ -198,6 +199,9 @@ mytaglistbuttons = awful.util.table.join(
    awful.button({ }, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
 )
 
+-- }}}
+
+--- Tasklist -- {{{
 mytasklistbuttons = awful.util.table.join(
    awful.button({ }, 1, function (c)
          if c == client.focus then
@@ -233,21 +237,10 @@ mytasklistbuttons = awful.util.table.join(
          awful.client.focus.byidx(-1)
          if client.focus then client.focus:raise() end
 end))
+-- }}}
 
-function set_wallpaper (s)
-   if beautiful.wallpaper then
-      local wallpaper = beautiful.wallpaper
-      if type(wallpaper) == "function" then
-         wallpaper = wallpaper(s)
-      end      
-      gears.wallpaper.maximized(wallpaper, s, true)
-   end
-end
-
-awful.screen.connect_for_each_screen(function (s)
-      -- Wallpaper
-      set_wallpaper(s)
-
+--- connect_for_each_screen -- {{{
+awful.screen.connect_for_each_screen(function (s)      
       -- Tags
       awful.tag(mytags.tags[s.index], s, layouts)
       
@@ -284,9 +277,14 @@ awful.screen.connect_for_each_screen(function (s)
       wibox_bot[s]:setup {
          mytasklist,
          layout = wibox.layout.flex.horizontal
-      }
-      
+      }      
 end)
+-- }}}
+
+--- Wallpaper -- {{{
+awful.spawn(beautiful.wallpaper_cmd)
+-- }}}
+
 -- }}}
 
 --- Menu -- {{{
