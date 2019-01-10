@@ -24,6 +24,7 @@
 --- Libraries -- {{{{
 -- Standard awesome library
 local gears     = require("gears"           )
+local gtable    = require("gears.table"     )
 local awful     = require("awful"           )
 awful.rules     = require("awful.rules"     )
                   require("awful.autofocus" )
@@ -34,6 +35,10 @@ local beautiful = require("beautiful"       )
 -- Notification library
 local naughty   = require("naughty"         )
 local menubar   = require("menubar"         )
+
+-- Widget Libraries
+local pass      = require("widgets.awesome-pass"     )
+local bat       = require("widgets.awesome-battery"  )
 -- }}}
 
 --- Error handling -- {{{
@@ -146,6 +151,39 @@ end
 
 -- }}}
 
+--- Widgets -- {{{
+mywidgets = {}
+
+-- layoutbox
+local mylayoutbox = awful.widget.layoutbox(s)
+mylayoutbox:buttons(
+   awful.util.table.join(
+      awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+      awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+      awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+      awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+
+local sep = wibox.widget { markup = " | ", align = "center", valign = "center",
+                           widget = wibox.widget.textbox }
+
+mywidgets.desktop    = { }
+mywidgets.desktop[1] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
+mywidgets.desktop[2] = { pass(), sep, wibox.widget.textclock(),
+                         sep, mylayoutbox,
+                         layout = wibox.layout.fixed.horizontal }
+
+mywidgets.laptop     = { }
+mywidgets.laptop[1]  = { bat(), sep, pass(), sep, wibox.widget.textclock(),
+                         sep, mylayoutbox,
+                         layout = wibox.layout.fixed.horizontal }
+
+if screen.count() == 2 then
+   mywidgets.widgets = mywidgets.desktop
+else   
+   mywidgets.widgets = mywidgets.laptop
+end
+-- }}}
+
 --- Screens -- {{{
 mypromptbox = {}
 local wibox_top = {}
@@ -223,23 +261,12 @@ awful.screen.connect_for_each_screen(function (s)
       -- tasklist
       local mytasklist =
          awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags,
-                               mytasklistbuttons)
-
-      -- clock
-      local mytextclock = wibox.widget.textclock()
-
-      -- layoutbox
-      local mylayoutbox = awful.widget.layoutbox(s)
-      mylayoutbox:buttons(
-         awful.util.table.join(
-            awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-            awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-            awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-            awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+                               mytasklistbuttons)      
       
       -- Put it all together in a wibox
       wibox_top[s] = awful.wibar(setmetatable({ position = "top", screen = s},
                                     {__index=wibox_args}))
+
       wibox_top[s]:setup {
          layout = wibox.layout.align.horizontal,
          { -- Left side
@@ -248,11 +275,7 @@ awful.screen.connect_for_each_screen(function (s)
             layout = wibox.layout.fixed.horizontal
          },
          nil, -- Nothing in the middle
-         { -- Right side
-            mytextclock,
-            mylayoutbox,
-            layout = wibox.layout.fixed.horizontal
-         },
+         mywidgets.widgets[s.index]
       }
       
       wibox_bot[s] = awful.wibar(setmetatable({ position = "bottom", screen = s},
@@ -261,7 +284,7 @@ awful.screen.connect_for_each_screen(function (s)
       wibox_bot[s]:setup {
          mytasklist,
          layout = wibox.layout.flex.horizontal
-                         }
+      }
       
 end)
 -- }}}
