@@ -39,6 +39,7 @@ local menubar   = require("menubar"         )
 -- Widget Libraries
 local pass      = require("widgets.awesome-pass"     )
 local bat       = require("widgets.awesome-battery"  )
+local disk      = require("widgets.awesome-disk"     )
 -- }}}
 
 --- Error handling -- {{{
@@ -167,13 +168,13 @@ local sep = wibox.widget { markup = " | ", align = "center", valign = "center",
                            widget = wibox.widget.textbox }
 
 mywidgets.desktop    = { }
-mywidgets.desktop[1] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
-mywidgets.desktop[2] = { pass(), sep, wibox.widget.textclock(),
+mywidgets.desktop[1] = { sep, disk(), sep, pass(), sep, wibox.widget.textclock(),
                          sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
+mywidgets.desktop[2] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 
 mywidgets.laptop     = { }
-mywidgets.laptop[1]  = { bat(), sep, pass(), sep, wibox.widget.textclock(),
+mywidgets.laptop[1]  = { disk(), sep, pass(), sep, wibox.widget.textclock(),
                          sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
 
