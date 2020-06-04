@@ -39,7 +39,6 @@ local menubar   = require("menubar"         )
 -- Widget Libraries
 local pass      = require("widgets.awesome-pass"     )
 local bat       = require("widgets.awesome-battery"  )
-local disk      = require("widgets.awesome-disk"     )
 -- }}}
 
 --- Error handling -- {{{
@@ -85,6 +84,20 @@ editor_cmd = terminal .. " -e " .. editor
 -- I suggest you to remap Mod4 to another key using xmodmap or other tools.
 -- However, you can use another modifier like Mod1, but it may interact with others.
 modkey = "Mod4"
+
+--- Autorun -- {{{
+autorun = true
+autorunProgs = {
+   "xcompmgr -f -c -s"
+}
+
+if autorun then
+   for _,v in ipairs(autorunProgs) do
+      awful.util.spawn(v)
+   end
+end
+
+-- }}}
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 local layouts = {
@@ -136,15 +149,16 @@ mytags = {}
 
 -- Multi screen (desktop) tags
 mytags.desktop = {}
-mytags.desktop[1] = { "surf", "watch", "listen", "create", "monitor" }
-mytags.desktop[2] = { "chat","code", "read", "system" }
+mytags.desktop[1] = { "surf", "watch", "play", "create", "monitor" }
+mytags.desktop[2] = { "chat", "read", "listen", "system" }
+mytags.desktop[3] = { "code", "debug" }
 
 -- Single screen (laptop) tags
 mytags.laptop  = {}
 mytags.laptop[1] = {"chat","code","read","surf","watch","listen",
                     "create","system","monitor"}
 
-if screen.count() == 2 then
+if screen.count() == 3 then
    mytags.tags = mytags.desktop
 else
    mytags.tags = mytags.laptop
@@ -156,29 +170,22 @@ end
 mywidgets = {}
 
 -- layoutbox
-local mylayoutbox = awful.widget.layoutbox(s)
-mylayoutbox:buttons(
-   awful.util.table.join(
-      awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-      awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-      awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-      awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
-
 local sep = wibox.widget { markup = " | ", align = "center", valign = "center",
                            widget = wibox.widget.textbox }
 
 mywidgets.desktop    = { }
-mywidgets.desktop[1] = { sep, disk(), sep, pass(), sep, wibox.widget.textclock(),
+mywidgets.desktop[1] = { sep, pass(), sep, wibox.widget.textclock(),
                          sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
 mywidgets.desktop[2] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
+mywidgets.desktop[3] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 
 mywidgets.laptop     = { }
-mywidgets.laptop[1]  = { disk(), sep, pass(), sep, wibox.widget.textclock(),
+mywidgets.laptop[1]  = { pass(), sep, wibox.widget.textclock(),
                          sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
 
-if screen.count() == 2 then
+if screen.count() > 1 then
    mywidgets.widgets = mywidgets.desktop
 else   
    mywidgets.widgets = mywidgets.laptop
@@ -261,6 +268,16 @@ awful.screen.connect_for_each_screen(function (s)
       wibox_top[s] = awful.wibar(setmetatable({ position = "top", screen = s},
                                     {__index=wibox_args}))
 
+      local mylayouts = awful.widget.layoutbox(s)
+      mylayouts:buttons(
+         awful.util.table.join(
+            awful.button({ }, 1, function () awful.layout.inc(1, s, layouts) end),
+            awful.button({ }, 3, function () awful.layout.inc(-1, s, layouts) end),
+            awful.button({ }, 4, function () awful.layout.inc(1, s, layouts) end),
+            awful.button({ }, 5, function () awful.layout.inc(-1, s, layouts) end)))
+
+      table.insert(mywidgets.widgets[s.index], mylayouts)
+
       wibox_top[s]:setup {
          layout = wibox.layout.align.horizontal,
          { -- Left side
@@ -269,6 +286,8 @@ awful.screen.connect_for_each_screen(function (s)
             layout = wibox.layout.fixed.horizontal
          },
          nil, -- Nothing in the middle
+
+         -- right side
          mywidgets.widgets[s.index]
       }
       
@@ -294,7 +313,7 @@ myawesomemenu = {
    { "manual", tools.terminal .. " -e man awesome" },
    { "edit config", editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
-   { "quit", awesome.quit }
+   { "quit", function() awesome.quit() end }
 }
 
 mymainmenu = awful.menu({
@@ -496,27 +515,23 @@ awful.rules.rules = {
 
 --- Signals -- {{{
 -- Signal function to execute when a new client appears.
-client.connect_signal("manage", function (c, startup)
-    -- Enable sloppy focus
-    c:connect_signal("mouse::enter", function(c)
-        if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-            and awful.client.focus.filter(c) then
-            client.focus = c
-        end
-    end)
+client.connect_signal("manage", function (c)
+    -- Give the new client focus
+    c.screen = mouse.screen
+    client.focus = c
+                         
+    -- Set the windows at the slave,
+    -- i.e. put it at the end of others instead of setting it master.
+    -- if not awesome.startup then awful.client.setslave(c) end
 
-    if not startup then
-        -- Set the windows at the slave,
-        -- i.e. put it at the end of others instead of setting it master.
-        -- awful.client.setslave(c)
-
-        -- Put windows in a smart way, only if they does not set an initial position.
-        if not c.size_hints.user_position and not c.size_hints.program_position then
-            awful.placement.no_overlap(c)
-            awful.placement.no_offscreen(c)
-        end
-    end
-
+    if awesome.startup and
+      not c.size_hints.user_position
+      and not c.size_hints.program_position then
+        -- Prevent clients from being unreachable after screen count changes.
+        awful.placement.no_offscreen(c)
+    end                         
+                      
+                         
     local titlebars_enabled = true
     if titlebars_enabled and (c.type == "normal" or c.type == "dialog") then
         -- buttons for the titlebar
@@ -560,7 +575,15 @@ client.connect_signal("manage", function (c, startup)
         layout:set_middle(middle_layout)
 
         awful.titlebar(c):set_widget(layout)
-    end
+    end    
+end)
+
+-- Enable sloppy focus
+client.connect_signal("mouse::enter", function(c)
+   if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+       and awful.client.focus.filter(c) then
+          client.focus = c
+   end
 end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
