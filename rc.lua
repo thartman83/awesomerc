@@ -37,6 +37,7 @@ local naughty   = require("naughty"         )
 local menubar   = require("menubar"         )
 
 -- Widget Libraries
+package.path    = '/home/thartman/.config/awesome/widgets/?.lua;' .. package.path
 local pass      = require("widgets.awesome-pass"     )
 local bat       = require("widgets.awesome-battery"  )
 -- }}}
