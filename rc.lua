@@ -40,6 +40,8 @@ local menubar   = require("menubar"         )
 package.path    = '/home/thartman/.config/awesome/widgets/?.lua;' .. package.path
 local pass      = require("widgets.awesome-pass"     )
 local bat       = require("widgets.awesome-battery"  )
+local conn      = require("connman_widget"           )
+conn.gui_client = "wicd"
 -- }}}
 
 --- Error handling -- {{{
@@ -182,7 +184,7 @@ mywidgets.desktop[2] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 mywidgets.desktop[3] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 
 mywidgets.laptop     = { }
-mywidgets.laptop[1]  = { pass(), sep, wibox.widget.textclock(),
+mywidgets.laptop[1]  = { conn, sep, bat(), sep, pass(), sep, wibox.widget.textclock(),
                          sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
 
