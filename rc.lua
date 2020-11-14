@@ -39,8 +39,16 @@ local menubar   = require("menubar"         )
 -- Widget Libraries
 local pass      = require("awesome_pass"     )
 local bat       = require("awesome_battery"  )
-local conn      = require("connman_widget"   )
-conn.gui_client = "wicd"
+local conn      = require("awesome-conn"     )
+local snd       = require("awesome-sound"    )
+local cal       = require("awesome-orgcal"   )
+
+local weather    = require("awesome-wm-widgets.weather-widget.weather")
+local cpu_widget = require("awesome-wm-widgets.cpu-widget.cpu-widget" )
+local volumebar_widget = require("awesome-wm-widgets.volumebar-widget.volumebar")
+
+--local draw      = require("awesome-draw"     )
+-- conn.gui_client = "wicd"
 -- }}}
 
 --- Error handling -- {{{
@@ -176,15 +184,42 @@ local sep = wibox.widget { markup = " | ", align = "center", valign = "center",
                            widget = wibox.widget.textbox }
 
 mywidgets.desktop    = { }
-mywidgets.desktop[1] = { sep, pass(), sep, wibox.widget.textclock(),
-                         sep, mylayoutbox,
+mywidgets.desktop[1] = { sep, pass(), sep, cal(), sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
 mywidgets.desktop[2] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 mywidgets.desktop[3] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 
 mywidgets.laptop     = { }
-mywidgets.laptop[1]  = { conn, sep, bat(), sep, pass(), sep, wibox.widget.textclock(),
-                         sep, mylayoutbox,
+mywidgets.laptop[1]  = { sep,
+                         volumebar_widget({
+                               main_color = '#434c5e',
+                               mute_color = '#ff0000',
+                               width = 80,
+                               shape = 'rounded_bar', -- octogon, hexagon, powerline, etc
+                               -- bar's height = wibar's height minus 2x margins
+                               margins = 8
+                         }),
+                         sep,
+                         cpu_widget({
+                               width = 70,
+                               step_width = 2,
+                               step_spacing = 0,
+                               color = '#434c5e'}),
+                         sep,
+                         weather({
+                               api_key = 'b6ee23cc7af7637bc88f6ab51ff24f85',
+                               coordinates = { 39.08038, -77.119491},
+                               time_format_12h = true,
+                               units = 'imperial',
+                               both_units_widget = false,
+                               font_name = 'Carter One',
+                               icons = 'weather-underground-icons',
+                               show_hourly_forecast = true,
+                               show_daily_forecast = true,
+                               icons_extension = '.png'
+                         }),
+                         sep, conn(), sep, bat(), sep, pass(), sep,
+                         cal(), sep, mylayoutbox,
                          layout = wibox.layout.fixed.horizontal }
 
 if screen.count() > 1 then
