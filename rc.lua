@@ -46,6 +46,11 @@ local cal       = require("awesome-orgcal"   )
 local weather    = require("awesome-wm-widgets.weather-widget.weather")
 local cpu_widget = require("awesome-wm-widgets.cpu-widget.cpu-widget" )
 local volumebar_widget = require("awesome-wm-widgets.volumebar-widget.volumebar")
+local spotify_widget = require("awesome-wm-widgets.spotify-widget.spotify")
+local docker_widget = require("awesome-wm-widgets.docker-widget.docker")
+
+-- Experimental
+local bt = require("awesome-bt")
 
 --local draw      = require("awesome-draw"     )
 -- conn.gui_client = "wicd"
@@ -159,15 +164,16 @@ mytags = {}
 
 -- Multi screen (desktop) tags
 mytags.desktop = {}
-mytags.desktop[1] = { "surf", "watch", "play", "create", "monitor" }
+mytags.desktop[1] = { "surf", "code", "play", "watch", "create" }
 mytags.desktop[2] = { "chat", "read", "listen", "system" }
-mytags.desktop[3] = { "code", "debug" }
+mytags.desktop[3] = { "monitor", "debug" }
 
 -- Single screen (laptop) tags
 mytags.laptop  = {}
 mytags.laptop[1] = {"chat","code","read","surf","watch","listen",
                     "create","system","monitor"}
 
+-- check the number of screens to determine if we are on the desktop or laptop
 if screen.count() == 3 then
    mytags.tags = mytags.desktop
 else
@@ -191,6 +197,14 @@ mywidgets.desktop[3] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
 
 mywidgets.laptop     = { }
 mywidgets.laptop[1]  = { sep,
+			 docker_widget(),
+			 sep,
+                         bt(),
+                         sep,
+                         spotify_widget({
+                               font = beautiful.font
+                         }),
+                         sep,
                          volumebar_widget({
                                main_color = '#434c5e',
                                mute_color = '#ff0000',
