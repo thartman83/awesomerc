@@ -1,0 +1,152 @@
+#+TITLE: Awesome RC
+#+AUTHOR: Tom Hartman
+#+STARTUP: overview
+#+PROPERTY: hedaer-args:lua :tangle ./rc-test.lua
+
+* Introduction
+This is my literate awesome-rc setup. Each section defines an area and aspect of the awesome configuration providing documentation for the code.
+
+This setup makes liberal use of git subtrees for external libraries. These include:
+
+- awesome-wm-widgets (https://github.com/streetturtle/awesome-wm-widgets)
+
+    Awesome wm widgets adds a large number of common and helpful widgets to awesome including normal things like cpu, memory, and storage monitoring, as well as more complex widgets like docker and weather.
+
+- bling (https://github.com/BlingCorp/bling)
+- cyclefocus (https://github.com/blueyed/awesome-cyclefocus)
+- lain (https://github.com/lcpz/lain)
+- layout-machi (https://github.com/xinhaoyuan/layout-machi)
+- machina (https://github.com/basaran/awesomewm-machina)
+- nice (https://github.com/mut-ex/awesome-wm-nice)
+
+  These are added to the repository via the shell command
+  #+begin_src sh
+git subtree add --prefix {new_src_dr} {git_url} {tag_or_branch} --squash
+  #+end_src
+
+  They are pulled into the repository at the current state of tag_or_branch.
+
+* Libraries
+
+** Core Awesome Libraries
+Include the core awesome libraries
+
+#+begin_src lua
+local gears     = require("gears"                    )
+local gtable    = require("gears.table"              )
+local awful     = require("awful"                    )
+                  require("awful.autofocus"          )
+                  require("awful.hotkeys_popup.keys" )
+local wibox     = require("wibox"                    )
+local beautiful = require("beautiful"                )
+local naughty   = require("naughty"                  )
+local ruled     = require("ruled"                    )
+local menubar   = require("menubar"                  )
+local io        = require("io"                       )
+local dpi       = require("beautiful.xresources"     ).apply_dpi
+#+end_src
+
+** Awesome Widget Libraries
+Include libraries from the awesome widgets library
+
+#+begin_src lua
+--local weather    = require("awesome-wm-widgets.weather-widget.weather")
+local cpu_widget = require("awesome-wm-widgets.cpu-widget.cpu-widget" )
+--local volumebar_widget = require("awesome-wm-widgets.volumebar-widget.volumebar")
+local spotify_widget = require("awesome-wm-widgets.spotify-widget.spotify")
+local docker_widget = require("awesome-wm-widgets.docker-widget.docker")
+--local bt_widget = require("awesome-wm-widgets.bluetooth-widget.bluetooth")
+#+end_src
+
+* Error Handling
+This is the stock error handling for awesome-rc
+
+#+begin_src lua
+naughty.connect_signal("request::display_error", function(message, startup)
+    naughty.notification {
+        urgency = "critical",
+        title   = "Oops, an error happened"..(startup and " during startup!" or "!"),
+        message = message
+    }
+end)
+#+end_src
+
+* Globals
+Define some variables that will be used repeatedly through the configuration process
+#+begin_src lua
+local conf_dir = gears.filesystem.get_configuration_dir()
+#+end_src
+
+* Terminal
+The terminal needs to be setup early for later processing with in the configuration
+
+#+begin_src lua
+--terminal = config.user.terminal --"kitty" --"urxvt"
+terminal   = "urxvt"
+editor     = os.getenv("EDITOR") or "emacsclient -nc"
+editor_cmd = terminal .. " -e " .. editor
+#+end_src
+
+* Key Definition
+Define various special keys such as the 'modkey' which is the primary way awesome commands and functionality is invoked. 'Mod4' is sometimes called the 'Super' key as well as the 'Windows' key. Usually its the key between the left hand control and alt.
+
+#+begin_src lua
+modkey = "Mod4"
+altkey  = "Mod1"
+ctrlkey = "Control"
+#+end_src
+
+* Layout Definitions
+Define the various layouts available to each tag.
+
+#+begin_src lua
+local layouts = {
+   awful.layout.suit.floating,
+   awful.layout.suit.tile,
+   awful.layout.suit.tile.left,
+   awful.layout.suit.tile.bottom,
+   awful.layout.suit.tile.top,
+   awful.layout.suit.fair,
+   awful.layout.suit.fair.horizontal,
+   awful.layout.suit.spiral,
+   awful.layout.suit.spiral.dwindle,
+   awful.layout.suit.max,
+   awful.layout.suit.max.fullscreen,
+   awful.layout.suit.magnifier
+}
+#+end_src
+
+* Theme and styling
+Set the theme
+
+#+begin_src lua
+local themeName = "multicolor"
+beautiful.init(conf_dir .. "/themes/" .. themeName .. "/theme.lua")
+#+end_src
+
+* Mouse Bindings
+
+* Key Binding
+
+* Client Signals
+
+* Client Rules
+
+* Notifications
+
+* Focusing
+
+* Autostart
+#+begin_src lua
+autorun = true
+autorunProgs = {
+   "xcompmgr -f -c -s",
+   "xscreensaver --no-splash"
+}
+
+if autorun then
+   for _,v in ipairs(autorunProgs) do
+      awful.util.spawn(v)
+   end
+end
+#+end_src
