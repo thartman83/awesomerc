@@ -1,7 +1,7 @@
 #+TITLE: Awesome RC
 #+AUTHOR: Tom Hartman
 #+STARTUP: overview
-#+PROPERTY: header-args:lua :tangle ./rc-test.lua
+#+PROPERTY: header-args:lua :tangle ./rc.lua
 
 * Introduction
 This is my literate awesome-rc setup. Each section defines an area and aspect of the awesome configuration providing documentation for the code.
@@ -18,6 +18,7 @@ This setup makes liberal use of git subtrees for external libraries. These inclu
 - layout-machi (https://github.com/xinhaoyuan/layout-machi)
 - machina (https://github.com/basaran/awesomewm-machina)
 - nice (https://github.com/mut-ex/awesome-wm-nice)
+- json (https://github.com/rxi/json.lua)
 
   These are added to the repository via the shell command
   #+begin_src sh
