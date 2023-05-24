@@ -21,7 +21,7 @@ end)
 
 local conf_dir = gears.filesystem.get_configuration_dir()
 
-local themeName = "multicolor"
+local themeName = "copland"
 beautiful.init(conf_dir .. "/themes/" .. themeName .. "/theme.lua")
 
 bling = require('bling')
@@ -183,6 +183,7 @@ mywidgets.desktop[1] = {
    sep,
    weather,
    sep,
+   mytextclock,
    mylayoutbox,
    layout = wibox.layout.fixed.horizontal }
 mywidgets.desktop[2] = { mylayoutbox, layout = wibox.layout.fixed.horizontal }
@@ -273,6 +274,9 @@ awful.screen.connect_for_each_screen(function (s)
 
       -- Prompt box
       s.mypromptbox = awful.widget.prompt()
+
+      -- quake termainl
+      s.quake = lain.util.quake({ app = terminal })
 
       -- taglist
       local taglist = awful.widget.taglist(s, awful.widget.taglist.filter.all,
@@ -368,6 +372,8 @@ awful.keyboard.append_global_keybindings({
               {description = "open a terminal2 (wezterm)", group = "launcher"}),
     awful.key({ modkey }, "r", function () awful.screen.focused().mypromptbox:run() end,
               {description = "run prompt", group = "launcher"}),
+    awful.key({ modkey }, "`", function () awful.screen.focused().quake:toggle() end,
+       { description = "open the quake terminal", group = "launcher"}),
     awful.key({ modkey }, "p", function() menubar.show() end,
               {description = "show the d-menu", group = "launcher"}),
 })
