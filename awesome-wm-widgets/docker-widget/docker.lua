@@ -41,23 +41,7 @@ local popup = awful.popup{
     widget = {}
 }
 
-local docker_widget = wibox.widget {
-    {
-        {
-            id = 'icon',
-            widget = wibox.widget.imagebox
-        },
-        margins = 4,
-        layout = wibox.container.margin
-    },
-    shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 4)
-    end,
-    widget = wibox.container.background,
-    set_icon = function(self, new_icon)
-        self:get_children_by_id("icon")[1].image = new_icon
-    end
-}
+local docker_widget = {}
 
 local parse_container = function(line)
     local name, id, image, status, how_long, size = line:match('(.*)::(.*)::(.*)::(%w*) (.*)::(.*)')
@@ -93,6 +77,25 @@ local function worker(user_args)
 
     local icon = args.icon or ICONS_DIR .. 'docker.svg'
     local number_of_containers = args.number_of_containers or -1
+
+
+    docker_widget = wibox.widget {
+       {
+          {
+             id = 'icon',
+             widget = wibox.widget.imagebox
+          },
+          margins = 4,
+          layout = wibox.container.margin
+       },
+       shape = function(cr, width, height)
+          gears.shape.rounded_rect(cr, width, height, 4)
+       end,
+       widget = wibox.container.background,
+       set_icon = function(self, new_icon)
+          self:get_children_by_id("icon")[1].image = new_icon
+       end
+    }
 
     docker_widget:set_icon(icon)
 
